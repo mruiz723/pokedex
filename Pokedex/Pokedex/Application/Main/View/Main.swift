@@ -18,8 +18,6 @@ struct Main: View {
     @State var showTabBar: Bool = true
     private var edges = UIApplication.shared.windows.first?.safeAreaInsets
 
-//    @ObservedObject var mainViewModel: MainViewModel = MainViewModel()
-
     var body: some View {
         VStack(spacing: 0) {
             GeometryReader { _ in
@@ -35,26 +33,8 @@ struct Main: View {
                         .opacity(selected == .itens ? 1 : 0)
                 }
             }
-//            .onChange(of: selected, perform: { _ in
-//                switch selected {
-//                case .pokemon:
-//                    if !mainViewModel.isPokemonLoad {
-//                        mainViewModel.loadPokemons()
-//                    }
-//                case .moves:
-//                    if !mainViewModel.isMovesLoad {
-//                        mainViewModel.loadMoves()
-//                    }
-//                case .itens:
-//                    if !mainViewModel.isItensLoad {
-//                        mainViewModel.loadItens()
-//                    }
-//                }
-//            })
-
-            // TabView
             if showTabBar {
-                CTabView(selected: $selected)
+                CustomTabView(selected: $selected)
             }
         }
         .ignoresSafeArea(.all, edges: .bottom)
@@ -66,30 +46,7 @@ class TabBarSettings: ObservableObject {
     @Published var showTabBar: Bool = true
 }
 
-//class MainViewModel: ObservableObject {
-//    @Published var isPokemonLoad = false
-//    @Published var isMovesLoad = false
-//    @Published var isItensLoad = false
-//    @StateObject var pokemonViewModel = PokemonViewModel()
-//
-//    func loadPokemons() {
-//        print("pokemons loaded")
-//        isPokemonLoad = true
-//        pokemonViewModel.fetchPokemons()
-//    }
-//
-//    func loadMoves() {
-//        print("pokemons loaded")
-//        isMovesLoad = true
-//    }
-//
-//    func loadItens() {
-//        print("pokemons loaded")
-//        isItensLoad = true
-//    }
-//}
-
-struct CTabView: View {
+struct CustomTabView: View {
     @Binding var selected: TabItem
     var tabs: [TabItem] = [.pokemon, .moves, .itens]
     var edges: UIEdgeInsets?
