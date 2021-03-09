@@ -10,7 +10,8 @@ import Combine
 import PokemonAPI
 
 extension PokemonAPI {
-    static var offset = 0
+    static var pokemonsOffset = 0
+    static var movesOffset = 0
     static let limit = 20
     static var count = 20
 
@@ -20,6 +21,16 @@ extension PokemonAPI {
             .dataTaskPublisher(for: url)
             .handleEvents(receiveOutput: {
                 print(NSString(data: $0.data, encoding: String.Encoding.utf8.rawValue)!)                
+            })
+            .tryMap { try JSONDecoder().decode(PageObject.self, from: $0.data) }
+            .eraseToAnyPublisher()
+    }
+
+    static func fetchMoveList(url: URL) -> AnyPublisher<PageObject, Error> {
+        return URLSession.shared
+            .dataTaskPublisher(for: url)
+            .handleEvents(receiveOutput: {
+                print(NSString(data: $0.data, encoding: String.Encoding.utf8.rawValue)!)
             })
             .tryMap { try JSONDecoder().decode(PageObject.self, from: $0.data) }
             .eraseToAnyPublisher()

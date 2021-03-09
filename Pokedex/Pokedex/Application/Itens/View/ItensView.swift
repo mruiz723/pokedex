@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct ItensView: View {
+    @Binding var selectedTab: TabItem
+
     var body: some View {
         NavigationView {
             Text("Itens View")
@@ -18,6 +20,6 @@ struct ItensView: View {
 
 struct ItensView_Previews: PreviewProvider {
     static var previews: some View {
-        ItensView()
+        ItensView(selectedTab: .constant(.itens))
     }
 }

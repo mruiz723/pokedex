@@ -1,5 +1,5 @@
 //
-//  ShimmerRow.swift
+//  ShimmerPokemonRow.swift
 //  Pokedex
 //
 //  Created by Marlon David Ruiz Arroyave on 2/03/21.
@@ -8,7 +8,7 @@
 import SwiftUI
 import PokemonAPI
 
-struct ShimmerRow: View {
+struct ShimmerPokemonRow: View {
     @State var show = false
     var center = (UIScreen.main.bounds.width / 2) + 110
 
@@ -74,17 +74,11 @@ struct ShimmerRow: View {
                     .offset(x: show ? center : -center)
             )
         }
-
-//        .onAppear {
-//            withAnimation(Animation.linear(duration: 1.5).repeatForever(autoreverses: false)) {
-//                show.toggle()
-//            }
-//        }
     }
 }
 
 struct ShimmerRow_Previews: PreviewProvider {
     static var previews: some View {
-        ShimmerRow()
+        ShimmerPokemonRow()
     }
 }

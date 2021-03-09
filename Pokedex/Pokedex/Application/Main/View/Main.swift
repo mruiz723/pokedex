@@ -14,7 +14,7 @@ enum TabItem: String {
 }
 
 struct Main: View {
-    @State var selected: TabItem = .pokemon
+    @State var selectedTab: TabItem = .pokemon
     @State var showTabBar: Bool = true
     private var edges = UIApplication.shared.windows.first?.safeAreaInsets
 
@@ -23,18 +23,18 @@ struct Main: View {
             GeometryReader { _ in
                 ZStack {
                     // Tabs
-                    PokemonView(showTabBar: $showTabBar)
-                        .opacity(selected == .pokemon ? 1 : 0)
+                    PokemonView(showTabBar: $showTabBar, selectedTab: $selectedTab)
+                        .opacity(selectedTab == .pokemon ? 1 : 0)
 
-                    MovesView()
-                        .opacity(selected == .moves ? 1 : 0)
+                    MovesView(showTabBar: $showTabBar, selectedTab: $selectedTab)
+                        .opacity(selectedTab == .moves ? 1 : 0)
 
-                    ItensView()
-                        .opacity(selected == .itens ? 1 : 0)
+                    ItensView(selectedTab: $selectedTab)
+                        .opacity(selectedTab == .itens ? 1 : 0)
                 }
             }
             if showTabBar {
-                CustomTabView(selected: $selected)
+                CustomTabView(selected: $selectedTab)
             }
         }
         .ignoresSafeArea(.all, edges: .bottom)

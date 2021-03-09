@@ -22,12 +22,22 @@ struct Endpoint {
 extension Endpoint {
 
     static func pokemons() -> Endpoint {
-        let offsetItem: URLQueryItem = URLQueryItem(name: Constants.offset, value: String(PokemonAPI.offset))
+        let offsetItem: URLQueryItem = URLQueryItem(name: Constants.offset, value: String(PokemonAPI.pokemonsOffset))
         let limitItem: URLQueryItem = URLQueryItem(name: Constants.limit, value: String(PokemonAPI.limit))
-        PokemonAPI.offset += PokemonAPI.limit
+        PokemonAPI.pokemonsOffset += PokemonAPI.limit
 
         return Endpoint(
             path: "/api/v2/pokemon", queryItems: [offsetItem, limitItem]
+        )
+    }
+
+    static func moves() -> Endpoint {
+        let offsetItem: URLQueryItem = URLQueryItem(name: Constants.offset, value: String(PokemonAPI.movesOffset))
+        let limitItem: URLQueryItem = URLQueryItem(name: Constants.limit, value: String(PokemonAPI.limit))
+        PokemonAPI.movesOffset += PokemonAPI.limit
+
+        return Endpoint(
+            path: "/api/v2/move", queryItems: [offsetItem, limitItem]
         )
     }
 }

@@ -1,47 +1,27 @@
 //
-//  PokemonViewModel.swift
+//  MovesViewModel.swift
 //  Pokedex
 //
-//  Created by Marlon David Ruiz Arroyave on 28/02/21.
+//  Created by Marlon David Ruiz Arroyave on 7/03/21.
 //
 
 import Foundation
 import PokemonAPI
 import Combine
-import SwiftUI
 
-class PokemonViewModel: ObservableObject {
-    @Published var pokemons = [PKMPokemon]()
+class MovesViewModel: ObservableObject {
+    @Published var moves = [PKMMove]()
     @Published var isLoadingPage = false
-    var pokemonsCopy = [PKMPokemon]()
 
     private var subscriptions: Set<AnyCancellable> = []
     private var pageObject: PageObject?
 
-    func filterPokemons(name: String?) {
-        if pokemonsCopy.count == 0 {
-            pokemonsCopy = pokemons
-        }
-        guard let name = name, name.count > 0 else {
-            pokemons = pokemonsCopy
-            return
-        }
-
-        pokemons = pokemons.filter { pokemon in
-            (pokemon.name?.lowercased().contains(name.lowercased()) ?? false)
-        }
-
-//        pokemons.filter { pokemon -> Bool in
-//            (pokemon.name?.localizedCaseInsensitiveCompare(name) ?? true)
-//        }
-    }
-
-    func fetchPokemons() {
+    func fetchMoves() {
         isLoadingPage = true
-        guard PokemonAPI.pokemonsOffset + PokemonAPI.limit <= PokemonAPI.count, let url = Endpoint.pokemons().url else { return }
-        var newPokemons: [PKMPokemon] = []
+        guard PokemonAPI.movesOffset + PokemonAPI.limit <= PokemonAPI.count, let url = Endpoint.moves().url else { return }
+        var newMoves: [PKMMove] = []
 
-        PokemonAPI.fetchPokemonList(url: url)
+        PokemonAPI.fetchMoveList(url: url)
             .sink(receiveCompletion: { completion in
                 if case .failure(let error) = completion {
                     print(error.localizedDescription)
@@ -53,7 +33,7 @@ class PokemonViewModel: ObservableObject {
                 pageObject.results?.forEach { [weak self] namedAPIResource  in
                     guard let self = self else { return }
                     print("loading \(namedAPIResource.url)")
-                    self.fetchPokemon(by: namedAPIResource.name)
+                    self.fetchMove(by: namedAPIResource.name)
                         .sink(receiveCompletion: { completion in
                             switch completion {
                             case .finished:
@@ -61,52 +41,51 @@ class PokemonViewModel: ObservableObject {
                             case .failure(let error):
                                 print("failed: \(error)")
                             }
-                        }, receiveValue: { pokemon in
-                            print("type: \(String(describing: pokemon.types?.first?.type?.name))")
-                            newPokemons.append(pokemon)
-                            if newPokemons.count == PokemonAPI.limit {
+                        }, receiveValue: { move in
+                            print("type: \(String(describing: move.name))")
+                            newMoves.append(move)
+                            if newMoves.count == PokemonAPI.limit {
                                 self.isLoadingPage = false
-                                self.pokemons.removeAll()
-                                newPokemons.sort(by: {
+                                self.moves.removeAll()
+                                newMoves.sort(by: {
                                     $0.id! < $1.id!
                                 })
-                                print("pokemons: \(newPokemons.count)")
-                                self.pokemons.append(contentsOf: newPokemons)
+                                print("moves: \(newMoves.count)")
+                                self.moves.append(contentsOf: newMoves)
                             }
-
                         }).store(in: &self.subscriptions)
                 }
             }).store(in: &subscriptions)
     }
 
-    func fetchPokemon(by name: String) -> AnyPublisher<PKMPokemon, Error> {
-        return PokemonAPI().pokemonService.fetchPokemon(name)
+    func fetchMove(by name: String) -> AnyPublisher<PKMMove, Error> {
+        return PokemonAPI().moveService.fetchMove(name)
     }
 
     // Initial shimmer data
     // Showing until data is loading
     func loadTempData() {
-        var pokemons: [PKMPokemon] = []
+        var moves: [PKMMove] = []
 
         for _ in 1...20 {
-            guard let temp = PKMPokemon.pokemonMock() else { return }
-            pokemons.append(temp)
+            guard let temp = PKMMove.moveMock() else { return }
+            moves.append(temp)
         }
 
-        self.pokemons = pokemons
+        self.moves = moves
     }
 
-    func fetchMoreListPockemons() {
-        guard !isLoadingPage, let shimmerPokemon = PKMPokemon.pokemonMock(), let url = Endpoint.pokemons().url else { return }
+    func fetchMoreListMoves() {
+        guard !isLoadingPage, let shimmerPokemon = PKMMove.moveMock(), let url = Endpoint.moves().url else { return }
         isLoadingPage = true
-        pokemons.append(shimmerPokemon)
+        moves.append(shimmerPokemon)
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
             guard let self = self else { return }
-            guard PokemonAPI.pokemonsOffset + PokemonAPI.limit <= PokemonAPI.count else { return }
-            var newPokemons: [PKMPokemon] = []
+            guard PokemonAPI.movesOffset + PokemonAPI.limit <= PokemonAPI.count else { return }
+            var newMoves: [PKMMove] = []
 
-            PokemonAPI.fetchPokemonList(url: url)
+            PokemonAPI.fetchMoveList(url: url)
                 .sink(receiveCompletion: { completion in
                     if case .failure(let error) = completion {
                         print(error.localizedDescription)
@@ -117,7 +96,7 @@ class PokemonViewModel: ObservableObject {
                     pageObject.results?.forEach { [weak self] namedAPIResource  in
                         print("loading \(namedAPIResource.url)")
                         guard let self = self else { return }
-                        self.fetchPokemon(by: namedAPIResource.name)
+                        self.fetchMove(by: namedAPIResource.name)
                             .receive(on: DispatchQueue.main)
                             .sink(receiveCompletion: { completion in
                                 switch completion {
@@ -127,15 +106,15 @@ class PokemonViewModel: ObservableObject {
                                     print("failed: \(error)")
                                 }
                             }, receiveValue: { pokemon in
-                                newPokemons.append(pokemon)
-                                if newPokemons.count == PokemonAPI.limit {
+                                newMoves.append(pokemon)
+                                if newMoves.count == PokemonAPI.limit {
                                     self.isLoadingPage = false
-                                    self.pokemons.removeLast()
-                                    newPokemons.sort(by: {
+                                    self.moves.removeLast()
+                                    newMoves.sort(by: {
                                         $0.id! < $1.id!
                                     })
-                                    print("pokemons: \(newPokemons.count)")
-                                    self.pokemons.append(contentsOf: newPokemons)
+                                    print("moves: \(newMoves.count)")
+                                    self.moves.append(contentsOf: newMoves)
                                 }
                             }).store(in: &self.subscriptions)
                     }
@@ -143,3 +122,4 @@ class PokemonViewModel: ObservableObject {
         }
     }
 }
+

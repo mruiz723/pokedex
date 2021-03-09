@@ -11,51 +11,61 @@ import PokemonAPI
 
 struct PokemonView: View {
     @Binding var showTabBar: Bool
+    @Binding var selectedTab: TabItem
     @State var didAppear = false
+    @State private var searchText = ""
     @StateObject var viewModel = PokemonViewModel()
     // For tracking
     @State var time = Timer.publish(every: 0.1, on: .main, in: .tracking).autoconnect()
 
     var body: some View {
         NavigationView {
-            List(viewModel.pokemons, id: \.id) { pokemon in
-                NavigationLink(destination: PokemonDetailView(showTabBar: $showTabBar)) {
-                    if pokemon.name == "" {
-                        ShimmerRow()
-                    } else {
-                        // Going to track end of data...
-                        ZStack {
-                            if viewModel.pokemons.last?.id == pokemon.id {
-                                GeometryReader { geometry in
-                                    PokemonRow(pokemon: pokemon)
-                                        .onAppear {
-                                            self.time = Timer.publish(every: 0.1, on: .main, in: .tracking).autoconnect()
-                                        }
-                                        .onReceive(self.time) { _ in
-                                            if geometry.frame(in: .global).maxY < UIScreen.main.bounds.height {
-                                                self.time.upstream.connect()
-                                                    .cancel()
-                                                print("Update data...")
-                                                viewModel.fetchMoreListPockemons()
+            VStack {
+                SearchBar(text: $searchText)
+                    .onChange(of: searchText) { _ in
+                        viewModel.filterPokemons(name: searchText)
+                    }
+                List(viewModel.pokemons, id: \.id) { pokemon in
+                    NavigationLink(destination: PokemonDetailView(showTabBar: $showTabBar, pokemon: pokemon)) {
+                        if pokemon.name == "" {
+                            ShimmerPokemonRow()
+                        } else {
+                            // Going to track end of data...
+                            ZStack {
+                                if viewModel.pokemons.last?.id == pokemon.id {
+                                    GeometryReader { geometry in
+                                        PokemonRow(pokemon: pokemon)
+                                            .onAppear {
+                                                self.time = Timer.publish(every: 0.1, on: .main, in: .tracking).autoconnect()
                                             }
-                                        }
+                                            .onReceive(self.time) { _ in
+                                                if geometry.frame(in: .global).maxY > UIScreen.main.bounds.height - 160 {
+                                                    self.time.upstream.connect()
+                                                        .cancel()
+                                                    print("Update data...")
+                                                    viewModel.fetchMoreListPockemons()
+                                                }
+                                            }
+                                    }
+                                } else {
+                                    PokemonRow(pokemon: pokemon)
                                 }
-                            } else {
-                                PokemonRow(pokemon: pokemon)
                             }
                         }
                     }
                 }
+                .navigationTitle("Pokemon")
+                .onAppear(perform: onLoad)
             }
-            .navigationTitle("Pokemon")
-            .onAppear(perform: onLoad)
+            .padding(0)
         }
     }
 
     private func onLoad() {
+        guard selectedTab == .pokemon else { return }
         if !didAppear {
             if viewModel.pokemons.count == 0 {
-                PokemonAPI.offset = 0
+                PokemonAPI.pokemonsOffset = 0
                 viewModel.loadTempData()
                 viewModel.fetchPokemons()
             }
@@ -66,6 +76,6 @@ struct PokemonView: View {
 
 struct PokemonView_Previews: PreviewProvider {
     static var previews: some View {
-        PokemonView(showTabBar: .constant(false))
+        PokemonView(showTabBar: .constant(false), selectedTab: .constant(.pokemon))
     }
 }

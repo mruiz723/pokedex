@@ -18,11 +18,12 @@ struct PokemonRow: View {
                 .resizable()
                 .padding(-10.0)
                 .frame(width: 68, height: 68, alignment: .center)
+                .scaledToFit()
 
             VStack(alignment: .leading) {
                 Text(pokemon?.name?.capitalized ?? "")
                     .font(.headline)
-                    .fontWeight(.regular)
+                    .fontWeight(.medium)
                 Text(pokemon?.formattedNumber() ?? "")
                     .font(.subheadline)
                     .foregroundColor(Color.gray)
@@ -32,13 +33,20 @@ struct PokemonRow: View {
 
             if let nameSecondaryType = pokemon?.secondaryType() {
                 Image(nameSecondaryType)
+                    .resizable()
+                    .frame(width: 40, height: 40)
+                    .scaledToFit()
             }
 
             if let namefirstType = pokemon?.primaryType() {
                 Image(namefirstType)
+                    .resizable()
+                    .frame(width: 40, height: 40)
+                    .scaledToFit()
             }
         }
         .padding(.horizontal, 20.0)
+        .padding(.vertical, 10.0)
     }
 }
 
